@@ -1,9 +1,8 @@
-
 import React from 'react';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Phone, BookOpen, PlayCircle, Users, MessageCircleHelp } from 'lucide-react';
+import { ExternalLink, Phone, BookOpen, PlayCircle, Users, MessageCircle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const ResourcesPage = () => {
@@ -37,7 +36,7 @@ const ResourcesPage = () => {
             <span>Support Groups</span>
           </TabsTrigger>
           <TabsTrigger value="therapy" className="flex items-center gap-1">
-            <MessageCircleHelp className="h-4 w-4" />
+            <MessageCircle className="h-4 w-4" />
             <span>Find Therapy</span>
           </TabsTrigger>
           <TabsTrigger value="tools" className="flex items-center gap-1">
@@ -294,7 +293,7 @@ const ResourcesPage = () => {
                 
                 <Card className="overflow-hidden">
                   <div className="h-32 bg-green-100 flex items-center justify-center">
-                    <MessageCircleHelp className="h-12 w-12 text-green-500" />
+                    <MessageCircle className="h-12 w-12 text-green-500" />
                   </div>
                   <CardContent className="pt-4">
                     <h3 className="font-semibold text-lg mb-1">Thought Journal</h3>
