@@ -4,13 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useMentalHealth } from '@/contexts/MentalHealthContext';
-import { Smile, Frown, Meh, SmilePlus, FrownPlus } from 'lucide-react';
+import { Smile, Frown, Meh, SmileBeam, CloudRain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const moods = [
   {
     value: 'very-sad',
-    icon: FrownPlus,
+    icon: CloudRain,
     label: 'Very Sad',
     color: 'bg-red-100 text-red-800 hover:bg-red-200 data-[state=active]:bg-red-200 data-[state=active]:ring-2 data-[state=active]:ring-red-600',
   },
@@ -34,7 +34,7 @@ const moods = [
   },
   {
     value: 'very-happy',
-    icon: SmilePlus,
+    icon: SmileBeam,
     label: 'Very Happy',
     color: 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 data-[state=active]:bg-emerald-200 data-[state=active]:ring-2 data-[state=active]:ring-emerald-600',
   },
