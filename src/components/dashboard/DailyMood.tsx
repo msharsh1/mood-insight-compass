@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useMentalHealth } from '@/contexts/MentalHealthContext';
-import { Smile, Frown, Meh, SmileBeam, CloudRain } from 'lucide-react';
+import { Smile, Frown, Meh, Smile2, CloudRain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const moods = [
@@ -34,7 +34,7 @@ const moods = [
   },
   {
     value: 'very-happy',
-    icon: SmileBeam,
+    icon: Smile2,
     label: 'Very Happy',
     color: 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 data-[state=active]:bg-emerald-200 data-[state=active]:ring-2 data-[state=active]:ring-emerald-600',
   },
