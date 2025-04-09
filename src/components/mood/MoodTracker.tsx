@@ -10,7 +10,7 @@ import MoodListView from './MoodListView';
 import MoodFactorsView from './MoodFactorsView';
 
 const MoodTracker = () => {
-  const [view, setView] = useState<'calendar' | 'list' | 'factors'>('calendar');
+  const [activeView, setActiveView] = useState<'calendar' | 'list' | 'factors'>('calendar');
   const { moods } = useMentalHealth();
   
   return (
@@ -18,7 +18,7 @@ const MoodTracker = () => {
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <CardTitle>Mood Tracker</CardTitle>
-          <Tabs value={view} onValueChange={(v) => setView(v as any)} className="w-full sm:w-auto">
+          <Tabs value={activeView} onValueChange={(v) => setActiveView(v as any)} className="w-full sm:w-auto">
             <TabsList className="grid grid-cols-3 w-full sm:w-auto">
               <TabsTrigger value="calendar" className="flex items-center gap-1">
                 <CalendarIcon className="h-4 w-4" />
@@ -37,15 +37,17 @@ const MoodTracker = () => {
         </div>
       </CardHeader>
       <CardContent>
-        <TabsContent value="calendar" className="mt-0">
-          <MoodCalendarView moods={moods} />
-        </TabsContent>
-        <TabsContent value="list" className="mt-0">
-          <MoodListView moods={moods} />
-        </TabsContent>
-        <TabsContent value="factors" className="mt-0">
-          <MoodFactorsView moods={moods} />
-        </TabsContent>
+        <Tabs value={activeView}>
+          <TabsContent value="calendar" className="mt-0">
+            <MoodCalendarView />
+          </TabsContent>
+          <TabsContent value="list" className="mt-0">
+            <MoodListView moods={moods} />
+          </TabsContent>
+          <TabsContent value="factors" className="mt-0">
+            <MoodFactorsView moods={moods} />
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
