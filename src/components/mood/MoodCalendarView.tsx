@@ -40,7 +40,7 @@ const MoodCalendarView = () => {
   const today = new Date();
   
   // Custom day rendering for Calendar
-  const renderDay = (day: React.ComponentProps<typeof Calendar>["components"]["day"]) => {
+  const renderDay = () => {
     return (props: any) => {
       const date = props.date;
       const mood = date ? getMoodForDate(date) : undefined;
@@ -68,7 +68,7 @@ const MoodCalendarView = () => {
           selected={today}
           className="rounded-md border"
           components={{
-            day: renderDay("day")
+            Day: renderDay()
           }}
         />
         <div className="flex justify-around mt-4">
