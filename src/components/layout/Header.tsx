@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Heart, Calendar, BarChart3, User } from 'lucide-react';
+import { Heart, Calendar, BarChart3, User, BookOpen, Settings } from 'lucide-react';
 
 const Header = () => {
   return (
@@ -18,10 +18,12 @@ const Header = () => {
           <Link to="/mood-log" className="text-foreground/80 hover:text-mental-purple transition-colors">Mood Tracker</Link>
           <Link to="/assessment" className="text-foreground/80 hover:text-mental-purple transition-colors">Assessment</Link>
           <Link to="/reports" className="text-foreground/80 hover:text-mental-purple transition-colors">Reports</Link>
+          <Link to="/resources" className="text-foreground/80 hover:text-mental-purple transition-colors">Resources</Link>
+          <Link to="/settings" className="text-foreground/80 hover:text-mental-purple transition-colors">Settings</Link>
         </nav>
         
         <div className="md:hidden flex items-center">
-          <div className="flex space-x-3">
+          <div className="flex space-x-2">
             <Link to="/">
               <Button variant="ghost" size="icon">
                 <BarChart3 className="h-5 w-5" />
@@ -40,6 +42,16 @@ const Header = () => {
             <Link to="/reports">
               <Button variant="ghost" size="icon">
                 <User className="h-5 w-5" />
+              </Button>
+            </Link>
+            <Link to="/resources">
+              <Button variant="ghost" size="icon">
+                <BookOpen className="h-5 w-5" />
+              </Button>
+            </Link>
+            <Link to="/settings">
+              <Button variant="ghost" size="icon">
+                <Settings className="h-5 w-5" />
               </Button>
             </Link>
           </div>

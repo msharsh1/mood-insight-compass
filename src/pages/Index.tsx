@@ -6,6 +6,8 @@ import Dashboard from './Dashboard';
 import MoodPage from './MoodPage';
 import AssessmentPage from './AssessmentPage';
 import ReportsPage from './ReportsPage';
+import ResourcesPage from './ResourcesPage';
+import SettingsPage from './SettingsPage';
 import NotFound from './NotFound';
 
 const Index = () => {
@@ -16,6 +18,8 @@ const Index = () => {
         <Route path="/mood-log" element={<MoodPage />} />
         <Route path="/assessment" element={<AssessmentPage />} />
         <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/resources" element={<ResourcesPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </MentalHealthProvider>

@@ -67,7 +67,10 @@ const AssessmentSummary = () => {
               <p className="text-sm font-medium">Depression</p>
               <p className="text-sm font-medium capitalize">{latestResult.depression.risk} risk</p>
             </div>
-            <Progress value={latestResult.depression.probability * 100} className="h-2" indicatorClassName={getRiskColor(latestResult.depression.risk)} />
+            <Progress 
+              value={latestResult.depression.probability * 100} 
+              className={`h-2 ${getRiskColor(latestResult.depression.risk)}`}
+            />
           </div>
           
           <div>
@@ -75,7 +78,10 @@ const AssessmentSummary = () => {
               <p className="text-sm font-medium">Anxiety</p>
               <p className="text-sm font-medium capitalize">{latestResult.anxiety.risk} risk</p>
             </div>
-            <Progress value={latestResult.anxiety.probability * 100} className="h-2" indicatorClassName={getRiskColor(latestResult.anxiety.risk)} />
+            <Progress 
+              value={latestResult.anxiety.probability * 100} 
+              className={`h-2 ${getRiskColor(latestResult.anxiety.risk)}`}
+            />
           </div>
           
           <div className="pt-2 flex justify-center">
