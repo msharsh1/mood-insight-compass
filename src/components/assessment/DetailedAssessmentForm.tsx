@@ -75,7 +75,7 @@ const DetailedAssessmentForm = () => {
     return "text-red-600";
   };
   
-  // Get background color based on value
+  // Get background color classes for slider
   const getSliderClasses = (value: number) => {
     if (value < 0.3) return "bg-green-500";
     if (value < 0.7) return "bg-yellow-500";
@@ -107,9 +107,10 @@ const DetailedAssessmentForm = () => {
                 step={0.1}
                 value={[features[index]]}
                 onValueChange={(value) => updateFeature(index, value)}
-                className="[&>div]:bg-gray-200"
-                classNameThumb="border-2 border-white shadow-md"
-                classNameRange={getSliderClasses(features[index])}
+                className={`[&>div]:bg-gray-200 [&_[role='slider']]:border-2 
+                  [&_[role='slider']]:border-white 
+                  [&_[role='slider']]:shadow-md 
+                  ${getSliderClasses(features[index])}`}
               />
             </div>
           ))}
