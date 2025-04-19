@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Upload, Check, AlertCircle } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { Textarea } from '@/components/ui/textarea';
 
 const AssessmentPage = () => {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -22,6 +23,7 @@ const AssessmentPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [modelTrained, setModelTrained] = useState(false);
   const [activeTab, setActiveTab] = useState('take-assessment');
+  const [csvContent, setCsvContent] = useState('');
   
   // Initialize the ML model
   const initializeModel = async () => {
@@ -75,6 +77,7 @@ const AssessmentPage = () => {
       
       reader.onload = async (event) => {
         const csvData = event.target?.result as string;
+        setCsvContent(csvData);
         
         try {
           await trainModelFromCSV(csvData);
@@ -88,7 +91,7 @@ const AssessmentPage = () => {
           console.error("Error training model:", error);
           toast({
             title: "Training Error",
-            description: "Failed to train the model with the provided CSV.",
+            description: "Failed to train the model with the provided CSV. Make sure it's tab-separated with the correct headers.",
             variant: "destructive",
           });
         } finally {
@@ -113,6 +116,39 @@ const AssessmentPage = () => {
         description: "An error occurred while processing the file.",
         variant: "destructive",
       });
+      setIsUploading(false);
+    }
+  };
+  
+  // Handle direct CSV input
+  const handleDirectCsvTraining = async () => {
+    if (!csvContent.trim()) {
+      toast({
+        title: "Empty Input",
+        description: "Please enter CSV data before training.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsUploading(true);
+    
+    try {
+      await trainModelFromCSV(csvContent);
+      setModelTrained(true);
+      setIsInitialized(true);
+      toast({
+        title: "Model Training Complete",
+        description: "The ML model has been trained successfully with your data.",
+      });
+    } catch (error) {
+      console.error("Error training model:", error);
+      toast({
+        title: "Training Error",
+        description: "Failed to train the model with the provided CSV. Make sure it's tab-separated with the correct headers.",
+        variant: "destructive",
+      });
+    } finally {
       setIsUploading(false);
     }
   };
@@ -252,7 +288,7 @@ const AssessmentPage = () => {
                   <div>
                     <p className="text-lg font-medium">Upload CSV Dataset</p>
                     <p className="text-sm text-muted-foreground mb-4">
-                      The CSV should contain columns for: sleep, appetite, focus, fatigue, mood_swings,
+                      The CSV should contain <strong>tab-separated</strong> columns for: sleep, appetite, focus, fatigue, mood_swings,
                       social_interaction, stress, irritability, physical_symptoms, self_esteem,
                       crying_spells, suicidal_thoughts, motivation, daily_functioning, panic_attacks,
                       depression, anxiety
@@ -261,7 +297,7 @@ const AssessmentPage = () => {
                       <Input 
                         id="csv-upload" 
                         type="file" 
-                        accept=".csv"
+                        accept=".csv,.tsv,.txt"
                         onChange={handleFileUpload}
                         className="absolute inset-0 opacity-0 cursor-pointer"
                         disabled={isUploading}
@@ -282,6 +318,31 @@ const AssessmentPage = () => {
                       </Button>
                     </div>
                   </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <Label htmlFor="csv-input">Or paste tab-separated CSV data directly:</Label>
+                  <Textarea
+                    id="csv-input"
+                    placeholder="Paste your tab-separated CSV data here..."
+                    className="h-64 font-mono text-sm"
+                    value={csvContent}
+                    onChange={(e) => setCsvContent(e.target.value)}
+                  />
+                  <Button 
+                    onClick={handleDirectCsvTraining} 
+                    className="w-full"
+                    disabled={isUploading || !csvContent}
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Training Model...
+                      </>
+                    ) : (
+                      "Train Model with This Data"
+                    )}
+                  </Button>
                 </div>
                 
                 <div className={`p-4 rounded-lg ${modelTrained ? 'bg-green-100 dark:bg-green-900/20' : 'bg-amber-100 dark:bg-amber-900/20'} flex items-center space-x-2`}>

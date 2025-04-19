@@ -15,8 +15,8 @@ const DetailedAssessmentForm = () => {
   
   const featureLabels = [
     'Sleep Problems', 'Appetite Changes', 'Focus Difficulties', 'Fatigue Level', 
-    'Mood Swings', 'Social Interaction', 'Stress Level', 'Irritability', 
-    'Physical Symptoms', 'Self Esteem', 'Crying Spells', 'Suicidal Thoughts', 
+    'Mood Swings', 'Social Isolation', 'Stress Level', 'Irritability', 
+    'Physical Symptoms', 'Low Self Esteem', 'Crying Spells', 'Suicidal Thoughts', 
     'Motivation Level', 'Daily Functioning', 'Panic Attacks'
   ];
   
@@ -68,6 +68,20 @@ const DetailedAssessmentForm = () => {
     }
   };
   
+  // Get color based on value
+  const getValueColor = (value: number) => {
+    if (value < 0.3) return "text-green-600";
+    if (value < 0.7) return "text-yellow-600";
+    return "text-red-600";
+  };
+  
+  // Get background color based on value
+  const getSliderClasses = (value: number) => {
+    if (value < 0.3) return "bg-green-500";
+    if (value < 0.7) return "bg-yellow-500";
+    return "bg-red-500";
+  };
+  
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
@@ -83,7 +97,9 @@ const DetailedAssessmentForm = () => {
             <div key={index} className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-sm font-medium">{label}</span>
-                <span className="text-sm">{Math.round(features[index] * 10)}/10</span>
+                <span className={`text-sm font-medium ${getValueColor(features[index])}`}>
+                  {Math.round(features[index] * 10)}/10
+                </span>
               </div>
               <Slider
                 defaultValue={[0]}
@@ -91,6 +107,9 @@ const DetailedAssessmentForm = () => {
                 step={0.1}
                 value={[features[index]]}
                 onValueChange={(value) => updateFeature(index, value)}
+                className="[&>div]:bg-gray-200"
+                classNameThumb="border-2 border-white shadow-md"
+                classNameRange={getSliderClasses(features[index])}
               />
             </div>
           ))}

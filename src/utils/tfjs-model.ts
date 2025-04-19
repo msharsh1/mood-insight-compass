@@ -52,12 +52,66 @@ export function createModel() {
   return newModel;
 }
 
+// Convert text values to numerical values
+function convertTextToNumeric(value: string): number {
+  value = value.toLowerCase().trim();
+  
+  // Map text values to numeric values
+  switch (value) {
+    // Frequency values
+    case 'never':
+      return 0.0;
+    case 'rare':
+    case 'no':
+      return 0.1;
+    case 'sometimes':
+    case 'occasional':
+      return 0.5;
+    case 'frequent':
+    case 'freq':
+      return 0.9;
+      
+    // Intensity values
+    case 'none':
+      return 0.0;
+    case 'low':
+    case 'mild':
+      return 0.25;
+    case 'normal':
+    case 'medium':
+    case 'average':
+    case 'reduced':
+      return 0.5;
+    case 'high':
+    case 'severe':
+    case 'unable':
+      return 0.9;
+      
+    // Social interaction values
+    case 'isolated':
+      return 0.9;
+    case 'very social':
+      return 0.1;
+      
+    // Convert binary values
+    case '0':
+      return 0;
+    case '1':
+      return 1;
+      
+    // Default to middle value if unknown
+    default:
+      console.warn(`Unknown value: ${value}, defaulting to 0.5`);
+      return 0.5;
+  }
+}
+
 // Parse CSV data and train model
 export async function trainModelFromCSV(csvString: string) {
   try {
     // Parse CSV data
-    const rows = csvString.split('\n');
-    const headers = rows[0].split(',').map(h => h.trim());
+    const rows = csvString.trim().split('\n');
+    const headers = rows[0].split('\t').map(h => h.trim());
     
     // Validate headers
     const requiredHeaders = [
@@ -91,29 +145,33 @@ export async function trainModelFromCSV(csvString: string) {
       const row = rows[i].trim();
       if (!row) continue; // Skip empty rows
       
-      const values = row.split(',').map(v => parseFloat(v.trim()));
+      const values = row.split('\t').map(v => v.trim());
       
-      // Extract features
-      const features = featureIndices.map(index => values[index]);
+      // Extract features and convert to numeric values
+      const features = featureIndices.map(index => convertTextToNumeric(values[index]));
       
       // Extract labels
-      const depression = values[depressionIndex];
-      const anxiety = values[anxietyIndex];
+      const depression = convertTextToNumeric(values[depressionIndex]);
+      const anxiety = convertTextToNumeric(values[anxietyIndex]);
       
-      // Skip rows with invalid data
-      if (features.some(isNaN) || isNaN(depression) || isNaN(anxiety)) {
-        console.warn('Skipping row with invalid data:', row);
-        continue;
+      // Only add data if we got valid features and labels
+      if (features.length === featureNames.length) {
+        featuresData.push(features);
+        labelsData.push([depression, anxiety]);
       }
-      
-      featuresData.push(features);
-      labelsData.push([depression, anxiety]);
     }
+    
+    // Check if we have any valid data
+    if (featuresData.length === 0 || labelsData.length === 0) {
+      throw new Error("No valid data found in CSV");
+    }
+    
+    console.log(`Training with ${featuresData.length} data points`);
     
     // Create a new model
     model = createModel();
     
-    // Convert to tensors
+    // Convert to tensors with explicit shape
     const xs = tf.tensor2d(featuresData);
     const ys = tf.tensor2d(labelsData);
     
