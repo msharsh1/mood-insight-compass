@@ -18,7 +18,7 @@ export const featureNames = [
 // Store the model globally
 let model: tf.LayersModel | null = null;
 
-// Create a simple sequential neural network model (not Random Forest, as that's not available in tfjs)
+// Create a simple sequential neural network model
 export function createModel() {
   // A simple feedforward neural network
   const newModel = tf.sequential();
@@ -52,16 +52,107 @@ export function createModel() {
   return newModel;
 }
 
-// Function to train the model with sample data
+// Parse CSV data and train model
+export async function trainModelFromCSV(csvString: string) {
+  try {
+    // Parse CSV data
+    const rows = csvString.split('\n');
+    const headers = rows[0].split(',').map(h => h.trim());
+    
+    // Validate headers
+    const requiredHeaders = [
+      'sleep', 'appetite', 'focus', 'fatigue', 'mood_swings',
+      'social_interaction', 'stress', 'irritability', 'physical_symptoms',
+      'self_esteem', 'crying_spells', 'suicidal_thoughts', 'motivation',
+      'daily_functioning', 'panic_attacks', 'depression', 'anxiety'
+    ];
+    
+    // Check if all required headers are present
+    const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+    if (missingHeaders.length > 0) {
+      throw new Error(`Missing required columns: ${missingHeaders.join(', ')}`);
+    }
+    
+    // Extract feature indices (to handle any order of columns)
+    const featureIndices = featureNames.map(name => headers.indexOf(name));
+    const depressionIndex = headers.indexOf('depression');
+    const anxietyIndex = headers.indexOf('anxiety');
+    
+    if (depressionIndex === -1 || anxietyIndex === -1) {
+      throw new Error('CSV must contain depression and anxiety columns');
+    }
+    
+    // Extract and normalize data
+    const featuresData: number[][] = [];
+    const labelsData: number[][] = [];
+    
+    // Skip header row
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i].trim();
+      if (!row) continue; // Skip empty rows
+      
+      const values = row.split(',').map(v => parseFloat(v.trim()));
+      
+      // Extract features
+      const features = featureIndices.map(index => values[index]);
+      
+      // Extract labels
+      const depression = values[depressionIndex];
+      const anxiety = values[anxietyIndex];
+      
+      // Skip rows with invalid data
+      if (features.some(isNaN) || isNaN(depression) || isNaN(anxiety)) {
+        console.warn('Skipping row with invalid data:', row);
+        continue;
+      }
+      
+      featuresData.push(features);
+      labelsData.push([depression, anxiety]);
+    }
+    
+    // Create a new model
+    model = createModel();
+    
+    // Convert to tensors
+    const xs = tf.tensor2d(featuresData);
+    const ys = tf.tensor2d(labelsData);
+    
+    // Train the model
+    await model.fit(xs, ys, {
+      epochs: 100,
+      verbose: 1,
+      batchSize: 8,
+      callbacks: {
+        onEpochEnd: (epoch, logs) => {
+          if (epoch % 10 === 0) {
+            console.log(`Epoch ${epoch}: loss = ${logs?.loss}`);
+          }
+        }
+      }
+    });
+    
+    // Clean up tensors
+    xs.dispose();
+    ys.dispose();
+    
+    // Save the model to localStorage
+    await saveModel();
+    
+    return model;
+  } catch (error) {
+    console.error("Error training model from CSV:", error);
+    throw error;
+  }
+}
+
+// Function to train the model with sample data (fallback)
 export async function trainModel() {
   // Create model if it doesn't exist
   if (!model) {
     model = createModel();
   }
   
-  // Sample training data - in a real app, this would come from the CSV
-  // Format: each row is [sleep, appetite, focus, ...etc]
-  // Values are normalized between 0-1 where 0 is good and 1 is severe symptom
+  // Sample training data
   const sampleFeatures = [
     [0.1, 0.2, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.1, 0.0, 0.0, 0.1, 0.1, 0.1], // Healthy
     [0.2, 0.3, 0.2, 0.3, 0.2, 0.2, 0.3, 0.2, 0.2, 0.2, 0.1, 0.0, 0.2, 0.2, 0.2], // Mild
@@ -69,7 +160,6 @@ export async function trainModel() {
     [0.7, 0.6, 0.8, 0.7, 0.7, 0.8, 0.8, 0.7, 0.6, 0.9, 0.7, 0.3, 0.8, 0.7, 0.3], // Severe depr
     [0.6, 0.4, 0.7, 0.6, 0.8, 0.6, 0.9, 0.8, 0.7, 0.5, 0.4, 0.1, 0.6, 0.6, 0.9], // Severe anx
     [0.9, 0.8, 0.9, 0.9, 0.8, 0.9, 0.9, 0.8, 0.7, 0.9, 0.8, 0.7, 0.9, 0.9, 0.8], // Both severe
-    // Add more examples to improve the model
     [0.3, 0.2, 0.3, 0.3, 0.2, 0.2, 0.3, 0.2, 0.1, 0.3, 0.1, 0.0, 0.3, 0.2, 0.5], // Mild anx
     [0.4, 0.5, 0.3, 0.4, 0.3, 0.3, 0.4, 0.3, 0.3, 0.5, 0.4, 0.1, 0.4, 0.4, 0.2], // Mild depr
   ];

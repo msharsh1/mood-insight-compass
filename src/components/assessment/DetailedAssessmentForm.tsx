@@ -5,11 +5,10 @@ import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription }
 import { Slider } from '@/components/ui/slider';
 import { toast } from '@/components/ui/use-toast';
 import { Loader2, Check } from 'lucide-react';
-import { featureNames, predict, trainModel } from '@/utils/tfjs-model';
+import { featureNames, predict } from '@/utils/tfjs-model';
 import { useMentalHealth } from '@/contexts/MentalHealthContext';
 
 const DetailedAssessmentForm = () => {
-  const [isTraining, setIsTraining] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [features, setFeatures] = useState<number[]>(Array(15).fill(0));
   const { addAssessmentResult } = useMentalHealth();
@@ -20,27 +19,6 @@ const DetailedAssessmentForm = () => {
     'Physical Symptoms', 'Self Esteem', 'Crying Spells', 'Suicidal Thoughts', 
     'Motivation Level', 'Daily Functioning', 'Panic Attacks'
   ];
-  
-  // Train the model
-  const handleTrainModel = async () => {
-    setIsTraining(true);
-    try {
-      await trainModel();
-      toast({
-        title: "Model Trained Successfully",
-        description: "The ML model has been trained and saved.",
-      });
-    } catch (error) {
-      console.error('Error training model:', error);
-      toast({
-        title: "Training Error",
-        description: "There was an error training the model.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsTraining(false);
-    }
-  };
   
   // Update a specific feature's value
   const updateFeature = (index: number, value: number[]) => {
@@ -119,28 +97,11 @@ const DetailedAssessmentForm = () => {
         </div>
       </CardContent>
       
-      <CardFooter className="flex justify-between">
-        <Button 
-          variant="outline" 
-          onClick={handleTrainModel} 
-          disabled={isTraining || isProcessing}
-        >
-          {isTraining ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Training Model...
-            </>
-          ) : (
-            <>
-              Train Model
-            </>
-          )}
-        </Button>
-        
+      <CardFooter>
         <Button 
           onClick={handleSubmit} 
-          disabled={isTraining || isProcessing}
-          className="btn-gradient text-white"
+          disabled={isProcessing}
+          className="btn-gradient text-white w-full"
         >
           {isProcessing ? (
             <>
