@@ -193,6 +193,7 @@ export const MentalHealthProvider = ({ children }: { children: ReactNode }) => {
       const { data, error } = await supabase
         .from('mood_entries')
         .insert({
+          user_id: session.user.id,
           mood_rating: mapMoodTypeToRating(newMood.mood),
           notes: newMood.notes || null,
           date: newMood.date,
@@ -253,6 +254,7 @@ export const MentalHealthProvider = ({ children }: { children: ReactNode }) => {
       const { data, error } = await supabase
         .from('assessment_results')
         .insert({
+          user_id: session.user.id,
           date: result.date,
           depression_score: result.depression.score,
           depression_probability: result.depression.probability,

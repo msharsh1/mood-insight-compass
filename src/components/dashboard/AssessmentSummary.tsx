@@ -1,14 +1,31 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useMentalHealth } from '@/contexts/MentalHealthContext';
 import { Link } from 'react-router-dom';
+import { AssessmentResult } from '@/types';
 
 const AssessmentSummary = () => {
   const { getLatestAssessmentResult } = useMentalHealth();
-  const latestResult = getLatestAssessmentResult();
+  const [latestResult, setLatestResult] = useState<AssessmentResult | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAssessmentResult = async () => {
+      try {
+        const result = await getLatestAssessmentResult();
+        setLatestResult(result);
+      } catch (error) {
+        console.error("Error fetching assessment result:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAssessmentResult();
+  }, [getLatestAssessmentResult]);
   
   const getRiskColor = (risk: 'low' | 'moderate' | 'high') => {
     switch (risk) {
@@ -22,6 +39,20 @@ const AssessmentSummary = () => {
         return 'bg-gray-500';
     }
   };
+
+  if (loading) {
+    return (
+      <Card className="card-gradient">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Mental Health Assessment</CardTitle>
+          <CardDescription>Loading your assessment data...</CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center items-center py-8">
+          <div className="animate-pulse h-2 w-32 bg-gray-300 rounded"></div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!latestResult) {
     return (
