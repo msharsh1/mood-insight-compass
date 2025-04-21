@@ -34,27 +34,56 @@ const AuthPage = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // Basic email validation
+  const isValidEmail = (email: string) => {
+    // Simple regex for basic email validation
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate email format first
+    if (!isValidEmail(email)) {
+      toast({
+        title: "Invalid email format",
+        description: "Please enter a valid email address",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setSubmitting(true);
 
-    if (variant === "login") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        toast({ title: "Login failed", description: error.message, variant: "destructive" });
+    try {
+      if (variant === "login") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          toast({ title: "Login failed", description: error.message, variant: "destructive" });
+        } else {
+          toast({ title: "Login successful" });
+        }
       } else {
-        toast({ title: "Login successful" });
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) {
+          toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
+        } else {
+          toast({ 
+            title: "Sign up successful", 
+            description: "Please check your email for a confirmation link if email confirmation is enabled." 
+          });
+          setVariant("login");
+        }
       }
-    } else {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) {
-        toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
-      } else {
-        toast({ title: "Sign up successful", description: "Please check your email for a confirmation link." });
-        setVariant("login");
-      }
+    } catch (error: any) {
+      toast({ 
+        title: "Authentication error", 
+        description: error.message || "An unexpected error occurred", 
+        variant: "destructive" 
+      });
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   return (
@@ -80,6 +109,7 @@ const AuthPage = () => {
               disabled={submitting}
               onChange={e => setPassword(e.target.value)}
               required
+              minLength={6}
             />
             <Button type="submit" disabled={submitting} className="w-full">
               {variant === "login" ? "Log In" : "Sign Up"}

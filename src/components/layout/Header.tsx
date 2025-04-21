@@ -12,14 +12,20 @@ const Header = () => {
   
   useEffect(() => {
     let mounted = true;
-    // Fix here: correctly access the subscription through the data property
+    // Correctly access the subscription through the data property
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (mounted) setUserEmail(session?.user?.email ?? null);
     });
+    
+    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (mounted) setUserEmail(session?.user?.email ?? null);
     });
-    return () => { mounted = false; subscription.unsubscribe(); };
+    
+    return () => { 
+      mounted = false; 
+      subscription.unsubscribe(); 
+    };
   }, [location]);
 
   const handleLogout = async () => {
