@@ -12,7 +12,8 @@ const Header = () => {
   
   useEffect(() => {
     let mounted = true;
-    const { subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Fix here: correctly access the subscription through the data property
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (mounted) setUserEmail(session?.user?.email ?? null);
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
