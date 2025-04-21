@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MentalHealthProvider } from '@/contexts/MentalHealthContext';
 import { Routes, Route } from 'react-router-dom';
@@ -9,6 +8,7 @@ import ReportsPage from './ReportsPage';
 import ResourcesPage from './ResourcesPage';
 import SettingsPage from './SettingsPage';
 import NotFound from './NotFound';
+import AuthPage from './AuthPage';
 
 const Index = () => {
   return (
@@ -20,6 +20,7 @@ const Index = () => {
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/auth" element={<AuthPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </MentalHealthProvider>
