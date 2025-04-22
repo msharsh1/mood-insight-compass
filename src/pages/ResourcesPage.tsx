@@ -86,14 +86,21 @@ const ResourcesPage = () => {
                 
                 <Card>
                   <CardHeader className="bg-purple-50">
-                    <CardTitle className="text-lg text-purple-700">Crisis Text Line</CardTitle>
-                    <CardDescription>Text HOME to 741741 for crisis support</CardDescription>
+                    <CardTitle className="text-lg text-purple-700">Find a Doctor</CardTitle>
+                    <CardDescription>Search for nearby medical professionals</CardDescription>
                   </CardHeader>
                   <CardContent className="pt-4">
                     <p className="text-sm mb-4">
-                      Text with trained crisis counselors for any type of crisis. Available 24/7.
+                      Use our external doctor finder tool to search for medical professionals in your area.
                     </p>
-                    <Button variant="outline" size="sm" className="w-full">Text Crisis Line</Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => window.open('https://find-doctors.onrender.com/', '_blank')}
+                    >
+                      Find Doctors
+                    </Button>
                   </CardContent>
                 </Card>
                 
