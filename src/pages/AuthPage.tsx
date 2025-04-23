@@ -12,39 +12,16 @@ const AuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [session, setSession] = useState<any>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Set up auth state listener BEFORE checking for session
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session) {
-        navigate("/");
-      }
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) {
-        navigate("/");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  // Basic email validation
-  const isValidEmail = (email: string) => {
-    // Simple regex for basic email validation
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
+  // Check if admin email and validate admin login
+  const isAdminLogin = email === 'mag@gmail.com';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate email format first
-    if (!isValidEmail(email)) {
+    // Basic email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       toast({
         title: "Invalid email format",
         description: "Please enter a valid email address",
@@ -57,20 +34,48 @@ const AuthPage = () => {
 
     try {
       if (variant === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ 
+          email, 
+          password 
+        });
+
         if (error) {
-          toast({ title: "Login failed", description: error.message, variant: "destructive" });
+          toast({ 
+            title: "Login failed", 
+            description: error.message, 
+            variant: "destructive" 
+          });
         } else {
-          toast({ title: "Login successful" });
+          // Check for admin login
+          if (isAdminLogin) {
+            const { data: adminCheck } = await supabase
+              .rpc('is_admin', { uid: data.user?.id });
+            
+            if (adminCheck) {
+              navigate("/admin");
+            } else {
+              navigate("/");
+            }
+          } else {
+            navigate("/");
+          }
         }
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({ 
+          email, 
+          password 
+        });
+
         if (error) {
-          toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
+          toast({ 
+            title: "Sign up failed", 
+            description: error.message, 
+            variant: "destructive" 
+          });
         } else {
           toast({ 
             title: "Sign up successful", 
-            description: "Please check your email for a confirmation link if email confirmation is enabled." 
+            description: "Please check your email for confirmation" 
           });
           setVariant("login");
         }
@@ -90,7 +95,9 @@ const AuthPage = () => {
     <div className="flex items-center justify-center min-h-[60vh]">
       <Card className="max-w-sm w-full shadow-lg">
         <CardHeader>
-          <CardTitle className="text-center">{variant === "login" ? "Login" : "Sign Up"}</CardTitle>
+          <CardTitle className="text-center">
+            {variant === "login" ? "Login" : "Sign Up"}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
