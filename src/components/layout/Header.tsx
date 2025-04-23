@@ -7,30 +7,48 @@ import { supabase } from '@/integrations/supabase/client';
 
 const Header = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   
   useEffect(() => {
-    let mounted = true;
-    // Correctly access the subscription through the data property
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (mounted) setUserEmail(session?.user?.email ?? null);
-    });
-    
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (mounted) setUserEmail(session?.user?.email ?? null);
-    });
-    
-    return () => { 
-      mounted = false; 
-      subscription.unsubscribe(); 
+    // Get user from localStorage
+    const getCurrentUser = () => {
+      const storedUser = localStorage.getItem('currentUser');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        setUserEmail(userData.email ?? null);
+        setIsAdmin(userData.isAdmin ?? false);
+      } else {
+        setUserEmail(null);
+        setIsAdmin(false);
+      }
     };
+    
+    getCurrentUser();
+    
+    // Also listen for auth changes from Supabase
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        // User logged out from Supabase
+        localStorage.removeItem('currentUser');
+        setUserEmail(null);
+        setIsAdmin(false);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
   }, [location]);
 
   const handleLogout = async () => {
+    // Remove user from localStorage
+    localStorage.removeItem('currentUser');
+    
+    // Also sign out from Supabase
     await supabase.auth.signOut();
+    
     setUserEmail(null);
+    setIsAdmin(false);
     navigate("/auth");
   };
 
@@ -49,6 +67,11 @@ const Header = () => {
           <Link to="/reports" className="text-foreground/80 hover:text-mental-purple transition-colors">Reports</Link>
           <Link to="/resources" className="text-foreground/80 hover:text-mental-purple transition-colors">Resources</Link>
           <Link to="/settings" className="text-foreground/80 hover:text-mental-purple transition-colors">Settings</Link>
+          {isAdmin && (
+            <Link to="/admin" className="text-foreground/80 hover:text-mental-purple transition-colors font-semibold text-mental-deep-purple">
+              Admin
+            </Link>
+          )}
           {userEmail ? (
             <div className="flex items-center gap-3 ml-6">
               <span className="text-foreground/70">{userEmail}</span>

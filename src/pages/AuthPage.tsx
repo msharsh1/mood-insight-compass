@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -47,20 +48,27 @@ const AuthPage = () => {
         } else {
           // Check for admin login
           if (isAdminEmail) {
-            const { data: adminCheck, error: adminError } = await supabase
-              .rpc('is_admin', { uid: data.user?.id });
-            
-            if (adminCheck === true) {
-              navigate("/admin");
-            } else {
-              navigate("/");
-            }
+            // Store in local JSON instead of calling RPC
+            const userData = {
+              id: data.user?.id,
+              email: data.user?.email,
+              isAdmin: true
+            };
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            navigate("/admin");
           } else {
+            // Store regular user data in localStorage
+            const userData = {
+              id: data.user?.id,
+              email: data.user?.email,
+              isAdmin: false
+            };
+            localStorage.setItem('currentUser', JSON.stringify(userData));
             navigate("/");
           }
         }
       } else {
-        const { error } = await supabase.auth.signUp({ 
+        const { data, error } = await supabase.auth.signUp({ 
           email, 
           password 
         });
@@ -72,6 +80,16 @@ const AuthPage = () => {
             variant: "destructive" 
           });
         } else {
+          // Store new user in localStorage
+          if (data.user) {
+            const userData = {
+              id: data.user?.id,
+              email: data.user?.email,
+              isAdmin: isAdminEmail // New users with admin email are admins
+            };
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+          }
+          
           toast({ 
             title: "Sign up successful", 
             description: "Please check your email for confirmation" 

@@ -14,20 +14,26 @@ import AuthPage from './AuthPage';
 import AdminPage from './AdminPage';
 
 const Index = () => {
-  const [session, setSession] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
+    // Check localStorage instead of Supabase session
+    const checkLocalUser = () => {
+      const storedUser = localStorage.getItem('currentUser');
+      setUser(storedUser ? JSON.parse(storedUser) : null);
       setLoading(false);
     };
 
-    checkSession();
+    checkLocalUser();
 
+    // Still listen to Supabase auth changes for logout handling
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+      if (!session) {
+        // User logged out from Supabase
+        localStorage.removeItem('currentUser');
+        setUser(null);
+      }
     });
 
     return () => {
@@ -36,16 +42,26 @@ const Index = () => {
   }, []);
 
   // Protected route component
-  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const ProtectedRoute = ({ children, adminOnly = false }: { children: React.ReactNode, adminOnly?: boolean }) => {
     if (loading) return <div>Loading...</div>;
-    return session ? <>{children}</> : <Navigate to="/auth" replace />;
+    
+    if (!user) {
+      return <Navigate to="/auth" replace />;
+    }
+    
+    // For admin routes, check if user is admin
+    if (adminOnly && !user.isAdmin) {
+      return <Navigate to="/" replace />;
+    }
+    
+    return <>{children}</>;
   };
 
   return (
     <MentalHealthProvider>
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
-        <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute adminOnly={true}><AdminPage /></ProtectedRoute>} />
         <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/mood-log" element={<ProtectedRoute><MoodPage /></ProtectedRoute>} />
         <Route path="/assessment" element={<ProtectedRoute><AssessmentPage /></ProtectedRoute>} />
