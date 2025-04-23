@@ -39,7 +39,6 @@ export interface AssessmentResult {
 
 export type User = {
   id: string;
+  name: string;
   email: string;
-  isAdmin: boolean;
-  name?: string;
 };
