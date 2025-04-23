@@ -14,8 +14,8 @@ const AuthPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  // Check if admin email and validate admin login
-  const isAdminEmail = email === 'mag@gmail.com';
+  // Admin credentials for quick check
+  const isAdminCredentials = email === 'admin@mindtrack.com' && password === 'admin123';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +33,23 @@ const AuthPage = () => {
     setSubmitting(true);
 
     try {
+      // Special handling for admin login
+      if (isAdminCredentials) {
+        const adminData = {
+          id: 'admin-' + Date.now(),
+          email: email,
+          isAdmin: true
+        };
+        localStorage.setItem('currentUser', JSON.stringify(adminData));
+        toast({ 
+          title: "Admin login successful", 
+          description: "Welcome to the admin dashboard" 
+        });
+        navigate("/admin");
+        setSubmitting(false);
+        return;
+      }
+
       if (variant === "login") {
         const { data, error } = await supabase.auth.signInWithPassword({ 
           email, 
@@ -46,26 +63,25 @@ const AuthPage = () => {
             variant: "destructive" 
           });
         } else {
-          // Check for admin login
-          if (isAdminEmail) {
-            // Store in local JSON instead of calling RPC
-            const userData = {
-              id: data.user?.id,
-              email: data.user?.email,
-              isAdmin: true
-            };
-            localStorage.setItem('currentUser', JSON.stringify(userData));
-            navigate("/admin");
-          } else {
-            // Store regular user data in localStorage
-            const userData = {
-              id: data.user?.id,
-              email: data.user?.email,
-              isAdmin: false
-            };
-            localStorage.setItem('currentUser', JSON.stringify(userData));
-            navigate("/");
+          // Regular user login
+          const userData = {
+            id: data.user?.id || 'user-' + Date.now(),
+            email: data.user?.email || email,
+            isAdmin: false
+          };
+          localStorage.setItem('currentUser', JSON.stringify(userData));
+          
+          // Save user data in localStorage for admin to view
+          const userId = `user_${userData.id}`;
+          if (!localStorage.getItem(userId)) {
+            localStorage.setItem(userId, JSON.stringify(userData));
           }
+          
+          toast({ 
+            title: "Login successful", 
+            description: "Welcome back!" 
+          });
+          navigate("/");
         }
       } else {
         const { data, error } = await supabase.auth.signUp({ 
@@ -83,18 +99,22 @@ const AuthPage = () => {
           // Store new user in localStorage
           if (data.user) {
             const userData = {
-              id: data.user?.id,
-              email: data.user?.email,
-              isAdmin: isAdminEmail // New users with admin email are admins
+              id: data.user?.id || 'user-' + Date.now(),
+              email: data.user?.email || email,
+              isAdmin: false
             };
             localStorage.setItem('currentUser', JSON.stringify(userData));
+            
+            // Save user data in localStorage for admin to view
+            const userId = `user_${userData.id}`;
+            localStorage.setItem(userId, JSON.stringify(userData));
           }
           
           toast({ 
             title: "Sign up successful", 
-            description: "Please check your email for confirmation" 
+            description: "Welcome to MindTrack!" 
           });
-          setVariant("login");
+          navigate("/");
         }
       }
     } catch (error: any) {
@@ -138,6 +158,10 @@ const AuthPage = () => {
             <Button type="submit" disabled={submitting} className="w-full">
               {variant === "login" ? "Log In" : "Sign Up"}
             </Button>
+            
+            <div className="text-xs text-muted-foreground mt-2 text-center">
+              <p>Admin access: admin@mindtrack.com / admin123</p>
+            </div>
           </form>
           <div className="text-center text-sm mt-4">
             {variant === "login"
