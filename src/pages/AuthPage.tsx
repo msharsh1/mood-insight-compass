@@ -15,7 +15,7 @@ const AuthPage = () => {
   const navigate = useNavigate();
 
   // Check if admin email and validate admin login
-  const isAdminLogin = email === 'mag@gmail.com';
+  const isAdminEmail = email === 'mag@gmail.com';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,11 +47,11 @@ const AuthPage = () => {
           });
         } else {
           // Check for admin login
-          if (isAdminLogin) {
-            const { data: adminCheck } = await supabase
+          if (isAdminEmail) {
+            const { data: adminCheck, error: adminError } = await supabase
               .rpc('is_admin', { uid: data.user?.id });
             
-            if (adminCheck) {
+            if (adminCheck === true) {
               navigate("/admin");
             } else {
               navigate("/");
